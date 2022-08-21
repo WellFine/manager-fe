@@ -17,5 +17,6 @@ const EnvConfig = {
 export default {
   env,
   mock: true,  // 是否用 mock 接口
+  namespace: 'manager',  // storage 用到的命名空间
   ...EnvConfig[env]
 }
