@@ -17,6 +17,16 @@
   // Options API 方式使用 router 跳转
   export default {
     name: 'Login',
+    mounted () {
+      // 直接调用 request
+      this.$request({
+        method: 'get',
+        url: '/login'
+      }).then(console.log)
+
+      // 通过 request.get 方式调用
+      this.$request.get('/login').then(console.log)
+    },
     methods: {
       goHome () {
         this.$router.push('/welcome')
