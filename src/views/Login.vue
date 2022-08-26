@@ -6,16 +6,21 @@
    -->
    <div class="login-wrapper">
     <div class="modal">
-      <el-form>
+      <!-- 
+        model 定义表单作用域
+        status-icon 作用是显示输入框的校验结果，具体可以看 input 框右侧小图标
+        rules 用于自定义校验规则，需要 el-form-item 标签的 prop 属性配合
+       -->
+      <el-form ref="userForm" :model="user" status-icon :rules="rules">
         <div class="title">蓝星</div>
-        <el-form-item>
-          <el-input type="text" :prefix-icon="User"></el-input>
+        <el-form-item prop="userName">
+          <el-input type="text" prefix-icon="User" v-model="user.userName"></el-input>
+        </el-form-item>
+        <el-form-item prop="userPwd">
+          <el-input type="password" prefix-icon="View" v-model="user.userPwd"></el-input>
         </el-form-item>
         <el-form-item>
-          <el-input type="password" :prefix-icon="View"></el-input>
-        </el-form-item>
-        <el-form-item>
-          <el-button type="primary" class="btn-login">登录</el-button>
+          <el-button type="primary" class="btn-login" @click="login">登录</el-button>
         </el-form-item>
       </el-form>
     </div>
@@ -23,14 +28,38 @@
 </template>
 
 <script>
-  import { User, View } from '@element-plus/icons-vue'
-
   export default {
     name: 'Login',
-    setup () {
+    data () {
       return {
-        User,
-        View
+        user: {
+          userName: '',
+          userPwd: ''
+        },
+        rules: {
+          userName: [{
+            // required 必填，message 错误提示，trigger 触发校验方式
+            required: true, message: '请输入用户名', trigger: 'blur'
+          }],
+          userPwd: [{
+            required: true, message: '请输入密码', trigger: 'blur'
+          }]
+        }
+      }
+    },
+    methods: {
+      login () {
+        // el-form 表单的 validate 是校验规则的方法，valid 参数为 true 表示校验通过
+        this.$refs.userForm.validate(valid => {
+          if (valid) {  // 校验通过
+            this.$api.login(this.user).then(res => {
+              this.$store.commit('saveUserInfo', res)  // $store 是 vuex 自己挂载的
+              this.$router.push('/welcome')
+            })
+          } else {
+            return false  // 校验不通过，返回 false 不做任何事
+          }
+        })
       }
     }
   }

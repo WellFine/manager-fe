@@ -48,6 +48,10 @@ function request (options) {
     options.params = options.data  // 使外部调用 request 函数时可以统一传入 data 属性
   }
 
+  if (typeof options.mock != 'undefined') {
+    config.mock = options.mock  // 局部 mock 有值则覆盖全局 mock 配置
+  }
+
   // 这里再次对不同环境下的基础接口地址做校验，每次调用 request 都做校验
   if (config.env === 'production') {
     service.defaults.baseURL = config.baseApi
