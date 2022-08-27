@@ -6,7 +6,13 @@ import vue from '@vitejs/plugin-vue'
 export default defineConfig({
   server: {
     host: 'localhost',
-    port: 8015
+    port: 8015,
+    proxy: {
+      '/api': {
+        // localhost:8015/api 会转发到 localhost:3000/api
+        target: 'http://localhost:3000'
+      }
+    }
   },
   plugins: [vue()]
 })

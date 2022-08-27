@@ -1,7 +1,7 @@
 const env = import.meta.env.MODE || 'production'  // 给一个线上的默认值，防止上线时出现意外
 const EnvConfig = {
   development: {
-    baseApi: '/',
+    baseApi: '/api',
     mockApi: 'https://www.fastmock.site/mock/c5cee191a657c9f7734bad9a0d6a03be/api'
   },
   test: {
@@ -16,7 +16,7 @@ const EnvConfig = {
 
 export default {
   env,
-  mock: true,  // 是否用 mock 接口
+  mock: false,  // 是否用 mock 接口
   namespace: 'manager',  // storage 用到的命名空间
   ...EnvConfig[env]
 }

@@ -25,7 +25,7 @@ service.interceptors.response.use(res => {
   // res 中的状态码是 http 的状态码，res.data 中的状态码才是接口的状态码
   const { code, data, msg } = res.data
   if (code === 200) return data
-  else if (code === 40001) {  // 40001 在本项目中是登录状态异常状态码
+  else if (code === 50001) {  // 50001 在本项目中是登录状态异常状态码
     ElMessage.error(TOKEN_INVALID)  // element-plus 组件提示错误
     setTimeout(() => {
       router.push('/login')  // 跳转登录页面
