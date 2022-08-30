@@ -13,28 +13,12 @@
         collapse 控制菜单是否展开
        -->
       <el-menu
-        default-active="1-1" router
+        :default-active="activeMenu" router
         background-color="#001529" text-color="#fff"
         :collapse="isCollapse"
         class="nav-menu"
       >
-        <el-sub-menu index="1">
-          <!-- title template 是插槽 -->
-          <template #title>
-            <el-icon><setting /></el-icon>
-            <span>系统管理</span>
-          </template>
-          <el-menu-item index="1-1">用户管理</el-menu-item>
-          <el-menu-item index="1-2">菜单管理</el-menu-item>
-        </el-sub-menu>
-        <el-sub-menu index="2">
-          <template #title>
-            <el-icon><setting /></el-icon>
-            <span>审批管理</span>
-          </template>
-          <el-menu-item index="2-1">休假申请</el-menu-item>
-          <el-menu-item index="2-2">待我审批</el-menu-item>
-        </el-sub-menu>
+        <tree-menu :userMenu="userMenu" />
       </el-menu>
     </div>
     <div :class="['content-right', isCollapse ? 'fold' : 'unfold']">
@@ -46,7 +30,7 @@
           <div class="bread">面包屑</div>
         </div>
         <div class="user-info">
-          <el-badge class="notice" :is-dot="true" type="danger">
+          <el-badge class="notice" :is-dot="noticeCount > 0" type="danger">
             <el-icon><bell /></el-icon>
           </el-badge>
           <!-- @command 监听点击了哪个 el-dropdown-item 标签，通过 command 属性判断 -->
@@ -76,16 +60,24 @@
 </template>
 
 <script>
+  import TreeMenu from './TreeMenu.vue'
+
   export default {
     name: 'Home',
+    components: { TreeMenu },
     data () {
       return {
         isCollapse: false,
-        userInfo: {
-          userName: 'eagle',
-          userEmail: 'eagle@admin.com'
-        }
+        userInfo: this.$store.state.userInfo,
+        noticeCount: 0,
+        userMenu: [],
+        // 默认选中的菜单项其实对应的就是当前路径，如 localhost:8015/#/welcome，默认选中的就是 /welcome
+        activeMenu: location.hash.slice(1)
       }
+    },
+    mounted () {
+      this.getNoticeCount()
+      this.getMenuList()
     },
     methods: {
       toggle () {
@@ -96,6 +88,22 @@
         this.$store.commit('saveUserInfo', '')
         this.userInfo = null
         this.$router.push('/login')
+      },
+      async getNoticeCount () {
+        try {
+          const count = await this.$api.noticeCount()
+          this.noticeCount = count
+        } catch (error) {
+          console.error(error)
+        }
+      },
+      async getMenuList () {
+        try {
+          const list = await this.$api.getMenuList()
+          this.userMenu = list
+        } catch (error) {
+          console.error(error)
+        }
       }
     }
   }
