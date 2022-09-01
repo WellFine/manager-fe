@@ -48,14 +48,8 @@
         </div>
       </div>
       <div class="wrapper">
-        <!-- 
-          main-page 主要是为了帮助 router-view 显示的组件加入背景色和高度样式
-          这样不用每个 router-view 要显示的组件都写一遍背景色和高度样式
-         -->
-        <div class="main-page">
-          <!-- 这个 router-view 用于显示 Home 组件路由的子路由组件，如 '/welcome' 对应的 Welcome 组件 -->
-          <router-view></router-view>
-        </div>
+        <!-- 这个 router-view 用于显示 Home 组件路由的子路由组件，如 '/welcome' 对应的 Welcome 组件 -->
+        <router-view></router-view>
       </div>
     </div>
   </div>
@@ -191,10 +185,6 @@
           因为引入的 index.scss 中设置了除 element-plus 元素外的所有元素为 border-box 模型
          */
         height: calc(100vh - 50px);
-        .main-page {
-          background-color: #fff;
-          height: 100%;
-        }
       }
     }
   }

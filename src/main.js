@@ -12,7 +12,11 @@ import storage from './utils/storage'
 const app = createApp(App)
 app.use(router)  // 引入 vue-router 并挂载到 app 实例上
 app.use(store)  // 引入 vuex 并挂载到 app 实例上
-app.use(ElementPlus)  // ElementPlus 就像插件，也是 use 引入
+/**
+ * ElementPlus 就像插件，也是 use 引入
+ * 可以全局配置 element-plus 的表单组件尺寸，large > medium > small，默认为 medium
+ */
+app.use(ElementPlus, { size: 'medium' })
 
 for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
   app.component(key, component)
