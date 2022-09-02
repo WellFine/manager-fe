@@ -2,14 +2,15 @@
   <div class='user-manager'>
     <div class="query-form">
       <!-- inline 设置行内表单 -->
-      <el-form :inline="true" :model="user">
-        <el-form-item>
+      <el-form ref="form" :inline="true" :model="user">
+        <!-- prop 属性用于协助表单的重置方法 resetFields -->
+        <el-form-item label="用户 ID" prop="userId">
           <el-input v-model="user.userId" placeholder="请输入用户 ID"></el-input>
         </el-form-item>
-        <el-form-item>
+        <el-form-item label="用户名称" prop="userName">
           <el-input v-model="user.userName" placeholder="请输入用户名称"></el-input>
         </el-form-item>
-        <el-form-item>
+        <el-form-item label="状态" prop="state">
           <el-select v-model="user.state" placeholder="请选择用户状态">
             <el-option :value="0" label="所有"></el-option>
             <el-option :value="1" label="在职"></el-option>
@@ -18,8 +19,8 @@
           </el-select>
         </el-form-item>
         <el-form-item>
-          <el-button type="primary">查询</el-button>
-          <el-button>重置</el-button>
+          <el-button type="primary" @click="handleQuery">查询</el-button>
+          <el-button @click="handleReset">重置</el-button>
         </el-form-item>
       </el-form>
     </div>
@@ -44,39 +45,35 @@
           </template>
         </el-table-column>
       </el-table>
+      <!-- 
+        background 为页码加上色块，layout 配置布局
+        total 总条数，page-size 每页条数
+       -->
+      <el-pagination
+        class="pagination" background layout="prev, pager, next"
+        :total="pager.total" :page-size="pager.pageSize"
+        @current-change="handleCurrentChange"
+      />
     </div>
   </div>
 </template>
 
 <script>
-  import { reactive } from 'vue'
+  import { getCurrentInstance, onMounted, reactive, ref } from 'vue'
 
   export default {
     name: 'User',
     setup () {
-      const user = reactive({})
+      /**
+       * Composition API 写法，setup 中没有 this，需要通过 getCurrentInstance 方法获取上下文 ctx
+       * appContext 可以拿到在 main.js 中配置的全局配置 $api、$storage 等
+       */
+      const { ctx, appContext } = getCurrentInstance()
+      const user = reactive({  // 用户表单对象
+        state: 0  // 默认状态为所有
+      })
       // 弄个假数据测试页面结构
-      const userList = reactive([{
-        "state": 1,
-        "role": 0,
-        "roleList": [
-          "60180b07b1eaed6c45fbebdb",
-          "60150cb764de99631b2c3cd3",
-          "60180b59b1eaed6c45fbebdc"
-        ],
-        "deptId": [
-          "60167059c9027b7d2c520a61",
-          "60167345c6a4417f2d27506f"
-        ],
-        "userId": 1000002,
-        "userName": "admin",
-        "userEmail": "admin@imooc.com",
-        "createTime": "2021-01-17T13:32:06.381Z",
-        "lastLoginTime": "2021-01-17T13:32:06.381Z",
-        "__v": 0,
-        "job": "前端架构师",
-        "mobile": "17611020000"
-      }])
+      const userList = ref([])  // 用户列表
       const columns = [{
         label: '用户 ID',
         prop: 'userId'
@@ -99,15 +96,64 @@
         label: '最后登录时间',
         prop: 'lastLoginTime'
       }]
+      const pager = reactive({  // 分页对象
+        pageNum: 1,
+        pageSize: 10
+      })
+
+      onMounted(() => {
+        getUserList()
+      })
+
+      // 获取用户列表
+      const getUserList = async () => {
+        const params = { ...user, ...pager }
+        const { $api } = appContext.config.globalProperties
+        try {
+          const { page, list } = await $api.getUserList(params)
+          userList.value = list
+          pager.total = page.total
+        } catch (error) {
+          console.error(error)
+        }
+      }
+
+      // 根据条件查询用户列表
+      const handleQuery = () => {
+        getUserList()
+      }
+      // 重置查询表单
+      const handleReset = () => {
+        ctx.$refs.form.resetFields()
+      }
+
+      // 分页事件处理
+      const handleCurrentChange = current => {
+        pager.pageNum = current
+        getUserList()
+      }
 
       return {
         user,
         userList,
-        columns
+        columns,
+        pager,
+        handleQuery,
+        handleReset,
+        handleCurrentChange
       }
     }
   }
 </script>
 
 <style lang='scss'>
+  .user-manager {
+    .base-table {
+      .pagination {
+        padding: 20px 10px;
+        display: flex;
+        justify-content: center;  // 设置分页器居中
+      }
+    }
+  }
 </style>
