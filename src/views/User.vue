@@ -28,20 +28,25 @@
       <!-- base-table 和 action 在 @/assets/style/index.scss 中设置了部分样式，主要是一些间距和边框 -->
       <div class="action">
         <el-button type="primary">新增</el-button>
-        <el-button type="danger">批量删除</el-button>
+        <el-button type="danger" @click="handlePatchDel">批量删除</el-button>
       </div>
-      <el-table :data="userList">
+      <!-- selection-change 在选中多选框时触发 -->
+      <el-table :data="userList" @selection-change="handleSelectionChange">
         <!-- type="selection" 是复选框 -->
         <el-table-column type="selection" width="55"></el-table-column>
-        <!-- prop 对应传入 el-table 的 data 数据中的属性 -->
+        <!--
+          prop 对应传入 el-table 的 data 数据中的属性
+          formatter 用于格式化显示的数据
+        -->
         <el-table-column
           v-for="item in columns" :key="item.prop"
-          :prop="item.prop" :label="item.label" :width="item.width"
+          :prop="item.prop" :label="item.label" :width="item.width" :formatter="item.formatter"
         ></el-table-column>
         <el-table-column label="操作" width="150">
-          <template #default>
+          <!-- 插槽的作用域 scope 中存放着当前行的数据 -->
+          <template #default="scope">
             <el-button size="small">编辑</el-button>
-            <el-button type="danger" size="small">删除</el-button>
+            <el-button type="danger" size="small" @click="handleDel(scope.row)">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -69,6 +74,8 @@
        * appContext 可以拿到在 main.js 中配置的全局配置 $api、$storage 等
        */
       const { ctx, appContext } = getCurrentInstance()
+      const { $api, $message } = appContext.config.globalProperties
+
       const user = reactive({  // 用户表单对象
         state: 0  // 默认状态为所有
       })
@@ -85,10 +92,24 @@
         prop: 'userEmail'
       }, {
         label: '用户角色',
-        prop: 'role'
+        prop: 'role',
+        // formatter 是 el-table 提供的用于格式化的方法，row 是所在行数据，column 是所在列数据，value 是绑定的值
+        formatter (row, column, value) {
+          return {
+            0: '管理员',
+            1: '普通用户'
+          }[value]
+        }
       }, {
         label: '用户状态',
-        prop: 'state'
+        prop: 'state',
+        formatter (row, column, value) {
+          return {
+            1: '在职',
+            2: '离职',
+            3: '试用期'
+          }[value]
+        }
       }, {
         label: '注册时间',
         prop: 'createTime'
@@ -100,6 +121,7 @@
         pageNum: 1,
         pageSize: 10
       })
+      let checkedUserIds = []  // 每选中一个用户就将其 id 存入该数组中
 
       onMounted(() => {
         getUserList()
@@ -108,7 +130,6 @@
       // 获取用户列表
       const getUserList = async () => {
         const params = { ...user, ...pager }
-        const { $api } = appContext.config.globalProperties
         try {
           const { page, list } = await $api.getUserList(params)
           userList.value = list
@@ -133,6 +154,52 @@
         getUserList()
       }
 
+      // 用户单个删除
+      const handleDel = async row => {
+        try {
+          const res = await $api.userDel({
+            userIds: [row.userId]
+          })
+          if (res.nModified > 0) {
+            $message.success('删除成功')
+            getUserList()
+          } else {
+            $message.error('删除失败')
+          }
+        } catch (err) {
+          $message.error('删除失败 ', err)
+        }
+      }
+      // 用户批量删除
+      const handlePatchDel = async () => {
+        if (checkedUserIds.length === 0) {
+          $message.error('请选择要删除的用户')
+          return
+        }
+        try {
+          const res = await $api.userDel({
+            userIds: checkedUserIds
+          })
+          if (res.nModified > 0) {
+            $message.success('删除成功')
+            getUserList()
+          } else {
+            $message.error('删除失败')
+          }
+        } catch (err) {
+          $message.error('删除失败 ', err)
+        }
+      }
+
+      // 表格选中多选框
+      const handleSelectionChange = list => {
+        const arr = []
+        list.map(item => {
+          arr.push(item.userId)
+        })
+        checkedUserIds = arr
+      }
+
       return {
         user,
         userList,
@@ -140,7 +207,10 @@
         pager,
         handleQuery,
         handleReset,
-        handleCurrentChange
+        handleCurrentChange,
+        handleDel,
+        handlePatchDel,
+        handleSelectionChange
       }
     }
   }
