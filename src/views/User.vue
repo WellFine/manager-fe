@@ -20,7 +20,7 @@
         </el-form-item>
         <el-form-item>
           <el-button type="primary" @click="handleQuery">查询</el-button>
-          <el-button @click="handleReset">重置</el-button>
+          <el-button @click="handleReset('form')">重置</el-button>
         </el-form-item>
       </el-form>
     </div>
@@ -62,7 +62,7 @@
     </div>
     <el-dialog title="用户新增" v-model="showModal">
       <!-- label-width 可以统一指定 el-form-item 的 label 宽度，让 label 对齐的同时防止 el-input 占据一整行 -->
-      <el-form :model="userForm" :rules="rules" label-width="100px">
+      <el-form ref="dialogForm" :model="userForm" :rules="rules" label-width="100px">
         <el-form-item label="用户名" prop="userName">
           <el-input v-model="userForm.userName" placeholder="请输入用户名称" />
         </el-form-item>
@@ -86,15 +86,27 @@
           </el-select>
         </el-form-item>
         <el-form-item label="系统角色" prop="roleList">
-          <el-select v-model="userForm.roleList" placeholder="请选择用户的系统角色">
-            <!-- 等待请求接口来循环 -->
-            <el-option />
+          <!-- multiple 开启下拉框多选，style="width: 100%" 让下拉框撑开到弹框宽度 -->
+          <el-select
+            v-model="userForm.roleList" placeholder="请选择用户的系统角色"
+            multiple style="width: 100%"
+          >
+            <el-option
+              v-for="role in roleList" :key="role._id"
+              :value="role._id" :label="role.roleName"
+            />
           </el-select>
         </el-form-item>
         <el-form-item label="所属部门" prop="deptId">
+          <!--
+            options 是渲染的数据源
+            props 中的 checkStrictly 指定父子节点不关联，可以单选
+            props 中的 value 和 label 指定数据源中的属性
+            clearable 支持清空选项
+          -->
           <el-cascader
             v-model="userForm.deptId" placeholder="请选择用户所属的部门"
-            :options="[]"
+            :options="deptList" style="width: 100%"
             :props="{ checkStrictly: true, value: '_id', label: 'deptName' }"
             clearable
           />
@@ -102,8 +114,8 @@
       </el-form>
       <template #footer>
         <span class="dialog-footer">
-          <el-button>取 消</el-button>
-          <el-button type="primary">确 定</el-button>
+          <el-button @click="handleClose">取 消</el-button>
+          <el-button type="primary" @click="handleSubmit">确 定</el-button>
         </span>
       </template>
     </el-dialog>
@@ -111,7 +123,7 @@
 </template>
 
 <script>
-  import { getCurrentInstance, onMounted, reactive, ref } from 'vue'
+  import { getCurrentInstance, onMounted, reactive, ref, toRaw } from 'vue'
 
   export default {
     name: 'User',
@@ -187,9 +199,15 @@
           required: true, message: '请选择用户所属的部门', trigger: 'blur'
         }]
       }
+      const action = ref('add')  // 定义用户操作行为，add 新增，edit 编辑
+      const roleList = ref([])  // 系统角色列表
+      const deptList = ref([])  // 部门列表
 
       onMounted(() => {
         getUserList()
+        // 担心性能问题可以在弹框打开时再请求，但一般后台项目不用担心性能问题，所以就在这里直接请求
+        getRoleList()
+        getDeptList()
       })
 
       // 获取用户列表
@@ -209,8 +227,8 @@
         getUserList()
       }
       // 重置查询表单
-      const handleReset = () => {
-        ctx.$refs.form.resetFields()
+      const handleReset = form => {
+        ctx.$refs[form].resetFields()
       }
 
       // 分页事件处理
@@ -267,7 +285,56 @@
 
       // 用户新增
       const handleCreate = () => {
+        action.value = 'add'
         showModal.value = true
+      }
+
+      // 获取系统角色名称列表
+      const getRoleList = async () => {
+        try {
+          roleList.value = await $api.getRoleList()
+        } catch (err) {
+          $message.error('获取系统角色列表失败 ', err)
+        }
+      }
+      // 获取部门列表
+      const getDeptList = async () => {
+        try {
+          deptList.value = await $api.getDeptList()
+        } catch (err) {
+          $message.error('获取部门列表失败 ', err)
+        }
+      }
+
+      // 用户新增弹框取消关闭方法
+      const handleClose = () => {
+        showModal.value = false
+        handleReset('dialogForm')
+      }
+      // 用户新增弹框确定提交方法
+      const handleSubmit = () => {
+        ctx.$refs.dialogForm.validate(async valid => {
+          if (valid) {  // 校验通过
+            // 参数不需要响应式，toRaw 转化为普通对象即可
+            const params = toRaw(userForm)
+            params.userEmail += '@imooc.com'
+            params.action = action.value
+            try {
+              const res = await $api.userSubmit(params)
+              if (res) {
+                showModal.value = false
+                $message.success('用户创建成功')
+                handleReset('dialogForm')
+                getUserList()
+              } else {
+                $message.error('用户创建失败')
+              }
+            } catch (err) {
+              $message.error('用户创建失败 ', err)
+            }
+          }
+          // 校验没有通过会提示
+        })
       }
 
       return {
@@ -278,13 +345,17 @@
         showModal,
         userForm,
         rules,
+        roleList,
+        deptList,
         handleQuery,
         handleReset,
         handleCurrentChange,
         handleDel,
         handlePatchDel,
         handleSelectionChange,
-        handleCreate
+        handleCreate,
+        handleClose,
+        handleSubmit
       }
     }
   }
