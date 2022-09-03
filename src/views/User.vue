@@ -27,7 +27,7 @@
     <div class="base-table">
       <!-- base-table 和 action 在 @/assets/style/index.scss 中设置了部分样式，主要是一些间距和边框 -->
       <div class="action">
-        <el-button type="primary">新增</el-button>
+        <el-button type="primary" @click="handleCreate">新增</el-button>
         <el-button type="danger" @click="handlePatchDel">批量删除</el-button>
       </div>
       <!-- selection-change 在选中多选框时触发 -->
@@ -60,6 +60,53 @@
         @current-change="handleCurrentChange"
       />
     </div>
+    <el-dialog title="用户新增" v-model="showModal">
+      <!-- label-width 可以统一指定 el-form-item 的 label 宽度，让 label 对齐的同时防止 el-input 占据一整行 -->
+      <el-form :model="userForm" :rules="rules" label-width="100px">
+        <el-form-item label="用户名" prop="userName">
+          <el-input v-model="userForm.userName" placeholder="请输入用户名称" />
+        </el-form-item>
+        <el-form-item label="邮箱" prop="userEmail">
+          <el-input v-model="userForm.userEmail" placeholder="请输入用户邮箱">
+            <!-- input 框后缀 -->
+            <template #append>@imooc.com</template>
+          </el-input>
+        </el-form-item>
+        <el-form-item label="手机号" prop="mobile">
+          <el-input v-model="userForm.mobile" placeholder="请输入用户手机号" />
+        </el-form-item>
+        <el-form-item label="岗位" prop="job">
+          <el-input v-model="userForm.job" placeholder="请输入用户岗位" />
+        </el-form-item>
+        <el-form-item label="状态" prop="state">
+          <el-select v-model="userForm.state" placeholder="请选择用户状态">
+            <el-option :value="1" label="在职" />
+            <el-option :value="2" label="离职" />
+            <el-option :value="3" label="试用期" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="系统角色" prop="roleList">
+          <el-select v-model="userForm.roleList" placeholder="请选择用户的系统角色">
+            <!-- 等待请求接口来循环 -->
+            <el-option />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="所属部门" prop="deptId">
+          <el-cascader
+            v-model="userForm.deptId" placeholder="请选择用户所属的部门"
+            :options="[]"
+            :props="{ checkStrictly: true, value: '_id', label: 'deptName' }"
+            clearable
+          />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <span class="dialog-footer">
+          <el-button>取 消</el-button>
+          <el-button type="primary">确 定</el-button>
+        </span>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -122,6 +169,24 @@
         pageSize: 10
       })
       let checkedUserIds = []  // 每选中一个用户就将其 id 存入该数组中
+      const showModal = ref(false)  // 弹框显示布尔值
+      const userForm = reactive({  // 用户新增表单对象
+        state: 3  // 状态默认为试用期
+      })
+      const rules = {  // 定义用户新增表单校验规则
+        userName: [{
+          required: true, message: '请输入用户名称', trigger: 'blur'
+        }],
+        userEmail: [{
+          required: true, message: '请输入用户邮箱', trigger: 'blur'
+        }],
+        mobile: [{
+          pattern: /1\d{10}/, message: '请输入正确的手机号格式', trigger: 'blur'
+        }],
+        deptId: [{
+          required: true, message: '请选择用户所属的部门', trigger: 'blur'
+        }]
+      }
 
       onMounted(() => {
         getUserList()
@@ -200,17 +265,26 @@
         checkedUserIds = arr
       }
 
+      // 用户新增
+      const handleCreate = () => {
+        showModal.value = true
+      }
+
       return {
         user,
         userList,
         columns,
         pager,
+        showModal,
+        userForm,
+        rules,
         handleQuery,
         handleReset,
         handleCurrentChange,
         handleDel,
         handlePatchDel,
-        handleSelectionChange
+        handleSelectionChange,
+        handleCreate
       }
     }
   }
