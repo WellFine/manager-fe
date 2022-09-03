@@ -45,7 +45,7 @@
         <el-table-column label="操作" width="150">
           <!-- 插槽的作用域 scope 中存放着当前行的数据 -->
           <template #default="scope">
-            <el-button size="small">编辑</el-button>
+            <el-button size="small" @click="handleEdit(scope.row)">编辑</el-button>
             <el-button type="danger" size="small" @click="handleDel(scope.row)">删除</el-button>
           </template>
         </el-table-column>
@@ -64,10 +64,10 @@
       <!-- label-width 可以统一指定 el-form-item 的 label 宽度，让 label 对齐的同时防止 el-input 占据一整行 -->
       <el-form ref="dialogForm" :model="userForm" :rules="rules" label-width="100px">
         <el-form-item label="用户名" prop="userName">
-          <el-input v-model="userForm.userName" placeholder="请输入用户名称" />
+          <el-input v-model="userForm.userName" placeholder="请输入用户名称" :disabled="action === 'edit'" />
         </el-form-item>
         <el-form-item label="邮箱" prop="userEmail">
-          <el-input v-model="userForm.userEmail" placeholder="请输入用户邮箱">
+          <el-input v-model="userForm.userEmail" placeholder="请输入用户邮箱" :disabled="action === 'edit'">
             <!-- input 框后缀 -->
             <template #append>@imooc.com</template>
           </el-input>
@@ -123,7 +123,7 @@
 </template>
 
 <script>
-  import { getCurrentInstance, onMounted, reactive, ref, toRaw } from 'vue'
+  import { getCurrentInstance, nextTick, onMounted, reactive, ref, toRaw } from 'vue'
 
   export default {
     name: 'User',
@@ -337,6 +337,20 @@
         })
       }
 
+      // 用户编辑
+      const handleEdit = row => {
+        action.value = 'edit'
+        showModal.value = true
+        /**
+         * 等弹框渲染出来后再填充数据，否则点击取消按钮时会重置不了表单
+         * 因为表单重置是重置到初始状态，这里如果不用 nextTick 那么表单初始状态就是有值的
+         */
+        nextTick(() => {
+          Object.assign(userForm, row)  // 将 row 中的数据复制到 userForm 中
+          userForm.userEmail = userForm.userEmail.split('@')[0]  // 填充文本时删掉 @imooc.com 后缀
+        })
+      }
+
       return {
         user,
         userList,
@@ -347,6 +361,7 @@
         rules,
         roleList,
         deptList,
+        action,
         handleQuery,
         handleReset,
         handleCurrentChange,
@@ -355,7 +370,8 @@
         handleSelectionChange,
         handleCreate,
         handleClose,
-        handleSubmit
+        handleSubmit,
+        handleEdit
       }
     }
   }
