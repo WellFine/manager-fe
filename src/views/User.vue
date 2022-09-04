@@ -124,6 +124,7 @@
 
 <script>
   import { getCurrentInstance, nextTick, onMounted, reactive, ref, toRaw } from 'vue'
+  import util from '@/utils/util'
 
   export default {
     name: 'User',
@@ -171,10 +172,18 @@
         }
       }, {
         label: '注册时间',
-        prop: 'createTime'
+        prop: 'createTime',
+        width: 180,
+        formatter: (row, column, value) => {
+          return util.formateDate(new Date(value))
+        }
       }, {
         label: '最后登录时间',
-        prop: 'lastLoginTime'
+        prop: 'lastLoginTime',
+        width: 180,
+        formatter: (row, column, value) => {
+          return util.formateDate(new Date(value))
+        }
       }]
       const pager = reactive({  // 分页对象
         pageNum: 1,
