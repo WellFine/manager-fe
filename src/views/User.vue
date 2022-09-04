@@ -252,7 +252,7 @@
           const res = await $api.userDel({
             userIds: [row.userId]
           })
-          if (res.nModified > 0) {
+          if (res.modifiedCount > 0) {
             $message.success('删除成功')
             getUserList()
           } else {
@@ -272,7 +272,7 @@
           const res = await $api.userDel({
             userIds: checkedUserIds
           })
-          if (res.nModified > 0) {
+          if (res.modifiedCount > 0) {
             $message.success('删除成功')
             getUserList()
           } else {
