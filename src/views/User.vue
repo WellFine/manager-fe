@@ -332,14 +332,14 @@
               const res = await $api.userSubmit(params)
               if (res) {
                 showModal.value = false
-                $message.success('用户创建成功')
+                $message.success('用户操作成功')
                 handleReset('dialogForm')
                 getUserList()
               } else {
-                $message.error('用户创建失败')
+                $message.error('用户操作失败')
               }
             } catch (err) {
-              $message.error('用户创建失败 ', err)
+              $message.error('用户操作失败 ', err)
             }
           }
           // 校验没有通过会提示
