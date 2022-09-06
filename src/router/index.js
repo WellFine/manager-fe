@@ -18,11 +18,18 @@ const routes = [{
     component: () => import('@/views/Welcome.vue')  // 按需加载
   }, {
     name: 'user',
-    path: '/user',
+    path: '/system/user',
     meta: {
       title: '用户管理'
     },
     component: () => import('@/views/User.vue')
+  }, {
+    name: 'menu',
+    path: '/system/menu',
+    meta: {
+      title: '菜单管理'
+    },
+    component: () => import('@/views/Menu.vue')
   }]
 }, {
   name: 'login',
