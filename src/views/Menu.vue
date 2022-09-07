@@ -228,14 +228,13 @@
             const { menuForm, action } = this
             const params = { ...menuForm, action }
             try {
-              const res = await this.$api.menuSubmit(params)
+              await this.$api.menuSubmit(params)
               this.showModal = false
               this.$message.success('操作成功')
               this.handleReset('dialogForm')
               this.getMenuList()
             } catch (error) {
               this.$message.error(`操作失败：${error}`)
-              
             }
           }
         })
