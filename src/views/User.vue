@@ -60,7 +60,7 @@
         @current-change="handleCurrentChange"
       />
     </div>
-    <el-dialog title="用户新增" v-model="showModal">
+    <el-dialog :title="action == 'add' ? '用户新增' : '用户编辑'" v-model="showModal">
       <!-- label-width 可以统一指定 el-form-item 的 label 宽度，让 label 对齐的同时防止 el-input 占据一整行 -->
       <el-form ref="dialogForm" :model="userForm" :rules="rules" label-width="100px">
         <el-form-item label="用户名" prop="userName">

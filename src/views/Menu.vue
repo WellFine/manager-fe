@@ -1,7 +1,7 @@
 <template>
   <div class="menu-manager">
     <div class="query-form">
-      <el-form :inline="true" :model="queryForm">
+      <el-form ref="form" :inline="true" :model="queryForm">
         <el-form-item label="菜单名称" prop="menuName">
           <el-input v-model="queryForm.menuName" placeholder="请输入菜单名称" />
         </el-form-item>
@@ -12,14 +12,14 @@
           </el-select>
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" @click="handleQuery">查询</el-button>
-          <el-button @click="handleReset">重置</el-button>
+          <el-button type="primary" @click="getMenuList">查询</el-button>
+          <el-button @click="handleReset('form')">重置</el-button>
         </el-form-item>
       </el-form>
     </div>
     <div class="base-table">
       <div class="action">
-        <el-button type="primary" @click="handleAdd">创建</el-button>
+        <el-button type="primary" @click="handleAdd(1)">创建</el-button>
       </div>
       <!-- 
         树形结构必须要定义 row-key
@@ -33,13 +33,60 @@
         />
         <el-table-column label="操作" width="220">
           <template #default="scope">
-            <el-button type="primary" @click="handleAdd(scope.row)" size="small">新增</el-button>
+            <el-button type="primary" @click="handleAdd(2, scope.row)" size="small">新增</el-button>
             <el-button type="success" @click="handleEdit(scope.row)" size="small">编辑</el-button>
             <el-button type="danger" @click="handleDel(scope.row)" size="small">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
     </div>
+    <el-dialog :title="action == 'add' ? '菜单新增' : (action == 'edit' ? '菜单编辑' : '菜单删除')" v-model="showModal">
+      <el-form ref="dialogForm" :model="menuForm" label-width="100px" :rules="rules">
+        <el-form-item label="菜单类型" prop="parentId">
+          <el-cascader
+            v-model="menuForm.parentId" placeholder="请选择父级菜单"
+            :options="menuList" clearable
+            :props="{ checkStrictly: true, value: '_id', label: 'menuName' }"
+            style="width: 100%"
+          />
+          <span>不选，则直接创建一级菜单</span>
+        </el-form-item>
+        <el-form-item label="菜单类型" prop="menuType">
+          <el-radio-group v-model="menuForm.menuType">
+            <el-radio :label="1">菜单</el-radio>
+            <el-radio :label="2">按钮</el-radio>
+          </el-radio-group>
+        </el-form-item>
+        <el-form-item :label="menuForm.menuType == 1 ? '菜单名称' : '按钮名称'" prop="menuName">
+          <el-input v-model="menuForm.menuName" placeholder="请输入名称" />
+        </el-form-item>
+        <el-form-item label="菜单图标" prop="icon" v-show="menuForm.menuType == 1">
+          <!-- 可以把输入框换成下拉框，提供图标供选择 -->
+          <el-input v-model="menuForm.icon" placeholder="请输入菜单图标" />
+        </el-form-item>
+        <el-form-item label="路由地址" prop="path" v-show="menuForm.menuType == 1">
+          <el-input v-model="menuForm.path" placeholder="请输入路由地址" />
+        </el-form-item>
+        <el-form-item label="权限标识" prop="menuCode" v-show="menuForm.menuType == 2">
+          <el-input v-model="menuForm.menuCode" placeholder="请输入权限标识" />
+        </el-form-item>
+        <el-form-item label="组件路径" prop="component" v-show="menuForm.menuType == 1">
+          <el-input v-model="menuForm.component" placeholder="请输入组件路径" />
+        </el-form-item>
+        <el-form-item label="菜单状态" prop="menuState" v-show="menuForm.menuType == 1">
+          <el-radio-group v-model="menuForm.menuState">
+            <el-radio :label="1">正常</el-radio>
+            <el-radio :label="2">停用</el-radio>
+          </el-radio-group>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <span class="dialog-footer">
+          <el-button @click="handleClose">取 消</el-button>
+          <el-button type="primary" @click="handleSubmit">确 定</el-button>
+        </span>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -98,7 +145,20 @@
           menuState: 1
         },
         menuList: [],
-        columns
+        columns,
+        showModal: false,
+        menuForm: {
+          menuType: 1,
+          menuState: 1
+        },
+        action: '',  // add 创建，edit 编辑，delete 删除
+        rules: {
+          menuName: [{
+            required: true, message: '请输入菜单名称', trigger: 'blur'
+          }, {
+            min: 2, max: 8, message: '菜单名称请限制在2-8个字符', trigger: 'blur'
+          }]
+        }
       }
     },
     mounted () {
@@ -112,11 +172,51 @@
           throw new Error(error)
         }
       },
-      handleQuery () {},
-      handleReset () {},
-      handleAdd () {},
+      // 重置表单
+      handleReset (form) {
+        this.$refs[form].resetFields()
+      },
+      // 新增菜单
+      handleAdd (type, row) {
+        this.showModal = true
+        this.action = 'add'
+        /**
+         * 点击列表项的新增，会给父级菜单一个初始值
+         * filter 过滤是因为第一层的 parentId 为 null
+         */
+        if (type == 2) {
+          this.$nextTick(() => {
+            // 让菜单渲染后再赋值，有利于表单重置
+            this.menuForm.parentId = [...row.parentId, row._id].filter(item => item)
+          })
+        }
+      },
       handleEdit () {},
-      handleDel () {}
+      handleDel () {},
+      // 弹框关闭
+      handleClose () {
+        this.showModal = false
+        this.handleReset('dialogForm')
+      },
+      // 菜单新增或编辑提交
+      handleSubmit () {
+        this.$refs.dialogForm.validate(async valid => {
+          if (valid) {
+            const { menuForm, action } = this
+            const params = { ...menuForm, action }
+            try {
+              const res = await this.$api.menuSubmit(params)
+              this.showModal = false
+              this.$message.success('操作成功')
+              this.handleReset('dialogForm')
+              this.getMenuList()
+            } catch (error) {
+              this.$message.error(`操作失败：${error}`)
+              
+            }
+          }
+        })
+      }
     }
   }
 </script>
