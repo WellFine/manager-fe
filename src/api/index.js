@@ -16,11 +16,12 @@ export default {
       data: {}
     })
   },
-  getMenuList () {
+  getMenuList (params) {
     return request({
       url: '/menu/list',
       method: 'get',
-      data: {}
+      data: params,
+      mock: false
     })
   },
   getUserList (params) {
