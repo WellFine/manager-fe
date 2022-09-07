@@ -35,7 +35,7 @@
           <template #default="scope">
             <el-button type="primary" @click="handleAdd(2, scope.row)" size="small">新增</el-button>
             <el-button type="success" @click="handleEdit(scope.row)" size="small">编辑</el-button>
-            <el-button type="danger" @click="handleDel(scope.row)" size="small">删除</el-button>
+            <el-button type="danger" @click="handleDel(scope.row._id)" size="small">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -191,8 +191,31 @@
           })
         }
       },
-      handleEdit () {},
-      handleDel () {},
+      handleEdit (row) {
+        this.showModal = true
+        this.action = 'edit'
+        this.$nextTick(() => {  // 弹框渲染后再赋值，有利于表单重置
+          // 不能直接赋值，因为 row 也是响应式的，如果此时重置表单会将 row 数据也重置掉
+          // this.menuForm = row
+          // 需要用 Object.assign 浅拷贝一份
+          Object.assign(this.menuForm, row)
+        })
+      },
+      async handleDel (_id) {
+        /**
+         * 这里不需要判断返回值，也不需要用 try-catch 包裹
+         * 因为在我们封装的 request 中，只有接口状态码为 200 才会正常返回数据
+         * 接口状态码不是 200 的都会提示错误，然后返回一个 Promise.reject
+         * 而 await 接收到 Promise.reject 就会抛出错误，不会继续走下去了
+         * 以往我们用 try-catch 捕获错误就是为了提示用户，但在 request 中已经提示过了，所以这里不用再捕获然后提示了
+         * 当然你也可以捕获错误然后什么都不做，让代码更加健壮
+         */
+        try {
+          await this.$api.menuSubmit({ _id, action: 'delete' })
+          this.$message.success('删除成功')
+          this.getMenuList()
+        } catch (err) { /* 封装的 request 中已经提示过错误了 */ }
+      },
       // 弹框关闭
       handleClose () {
         this.showModal = false
