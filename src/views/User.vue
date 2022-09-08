@@ -215,7 +215,7 @@
       onMounted(() => {
         getUserList()
         // 担心性能问题可以在弹框打开时再请求，但一般后台项目不用担心性能问题，所以就在这里直接请求
-        getRoleList()
+        getRoleAllList()
         getDeptList()
       })
 
@@ -299,9 +299,9 @@
       }
 
       // 获取系统角色名称列表
-      const getRoleList = async () => {
+      const getRoleAllList = async () => {
         try {
-          roleList.value = await $api.getRoleList()
+          roleList.value = await $api.getRoleAllList()
         } catch (err) {
           $message.error('获取系统角色列表失败 ', err)
         }
