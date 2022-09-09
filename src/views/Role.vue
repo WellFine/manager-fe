@@ -13,7 +13,7 @@
     </div>
     <div class="base-table">
       <div class="action">
-        <el-button type="primary">创建</el-button>
+        <el-button type="primary" @click="handleAdd">创建</el-button>
       </div>
       <el-table :data="roleList">
         <el-table-column
@@ -22,10 +22,10 @@
           :width="item.width" :formatter="item.formatter"
         />
         <el-table-column label="操作" width="260">
-          <template #default>
-            <el-button size="small">编辑</el-button>
+          <template #default="scope">
+            <el-button size="small" @click="handleEdit(scope.row)">编辑</el-button>
             <el-button type="primary" size="small">设置权限</el-button>
-            <el-button type="danger" size="small">删除</el-button>
+            <el-button type="danger" size="small" @click="handleDel(scope.row._id)">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -36,6 +36,22 @@
         @current-change="handleCurrentChange"
       />
     </div>
+    <el-dialog title="角色新增" v-model="showModal">
+      <el-form ref="dialogForm" :model="roleForm" label-width="100px" :rules="rules">
+        <el-form-item label="角色名称" prop="roleName">
+          <el-input v-model="roleForm.roleName" placeholder="请输入角色名称" />
+        </el-form-item>
+        <el-form-item label="备注" prop="remark">
+          <el-input type="textarea" v-model="roleForm.remark" placeholder="请输入备注" />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <span class="dialog-footer">
+          <el-button @click="handleClose">取 消</el-button>
+          <el-button type="primary" @click="handleSubmit">确 定</el-button>
+        </span>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -70,6 +86,14 @@
           pageNum: 1,
           pageSize: 10,
           total: 0
+        },
+        action: 'add',
+        showModal: false,
+        roleForm: {},
+        rules: {
+          roleName: [{
+            required: true, message: '请输入角色名称', trigger: 'blur'
+          }]
         }
       }
     },
@@ -88,6 +112,61 @@
       },
       handleReset (form) {
         this.$refs[form].resetFields()
+      },
+      // 角色新增弹出弹框
+      handleAdd () {
+        this.action = 'add'
+        this.showModal = true
+      },
+      // 角色编辑
+      handleEdit (row) {
+        this.action = 'edit'
+        this.showModal = true
+        this.$nextTick(() => {  // nextTick 让数据在渲染后再赋值，保证表单初始状态为空
+          // 用 Object.assign 而不是直接赋值，是因为 row 也是响应式的，如果表单重置 row 这行数据也会清空
+          Object.assign(this.roleForm, row)
+        })
+      },
+      // 角色删除
+      async handleDel (_id) {
+        try {
+          await this.$api.roleSubmit({ _id, action: 'delete' })
+          this.$message.success('删除成功')
+          this.getRoleList()
+        } catch (error) {
+          this.$message.error(`删除失败：${error}`)
+        }
+      },
+      // 弹框关闭
+      handleClose () {
+        this.handleReset('dialogForm')
+        // 角色编辑时会将一整行数据都复制给 roleForm，其中有不需要的字段在清除表单时仍会保留，所以这里将其置为空对象
+        this.roleForm = {}
+        this.showModal = false
+      },
+      // 角色提交
+      handleSubmit () {
+        this.$refs.dialogForm.validate(async valid => {
+          if (valid) {
+            try {
+              const { roleForm, action } = this
+              const params = { ...roleForm, action }
+              const res = await this.$api.roleSubmit(params)
+              if (res) {
+                this.showModal = false
+                this.$message.success('角色操作成功')
+                this.handleReset('dialogForm')
+                // 角色编辑时会将一整行数据都复制给 roleForm，其中有不需要的字段在清除表单时仍会保留，所以这里将其置为空对象
+                this.roleForm = {}
+                this.getRoleList()
+              } else {
+                this.$message.error('角色操作失败')
+              }
+            } catch (error) {
+              this.$message.error(`角色操作失败：${error}`)
+            }
+          }
+        })
       },
       handleCurrentChange (current) {
         this.pager.pageNum = current
