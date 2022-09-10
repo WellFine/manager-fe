@@ -87,5 +87,13 @@ export default {
       data: params,
       mock: true
     })
+  },
+  updatePermission (params) {
+    return request({
+      url: '/roles/update/permission',
+      method: 'post',
+      data: params,
+      mock: true
+    })
   }
 }
