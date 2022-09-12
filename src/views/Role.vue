@@ -91,7 +91,14 @@
     prop: 'remark'
   }, {
     label: '权限列表',
-    prop: 'menuList'
+    prop: 'permissionList',
+    formatter: (row, column, value) => {
+      const list = value.halfCheckedKeys || [], names = []
+      list.map(key => {
+        if (key) names.push(actionMap[key])
+      })
+      return names.filter(item => item).join('，')
+    }
   }, {
     label: '创建时间',
     prop: 'createTime',
@@ -99,6 +106,7 @@
       return util.formateDate(new Date(value))
     }
   }]
+  const actionMap = {}
 
   export default {
     name: 'Role',
@@ -123,7 +131,8 @@
         showPermission: false,
         curRoleId: '',
         curRoleName: '',
-        menuList: []
+        menuList: [],
+        actionMap: {}
       }
     },
     mounted () {
@@ -205,6 +214,7 @@
       async getMenuList () {
         try {
           this.menuList = await this.$api.getMenuList()
+          this.getActionMap(this.menuList)
         } catch (error) {
           throw new Error(error)
         }
@@ -238,6 +248,20 @@
         this.showPermission = false
         this.$message.success('设置成功')
         this.getRoleList()
+      },
+      getActionMap (list) {
+        const deep = arr => {
+          while (arr.length) {
+            const item = arr.pop()
+            if (item.children && item.action) {  // 按钮的上一级菜单
+              actionMap[item._id] = item.menuName
+            }
+            if (item.children && !item.action) {  // 一级菜单，子数组不是按钮的
+              deep(item.children.slice())
+            }
+          }
+        }
+        deep(list.slice())
       }
     }
   }
