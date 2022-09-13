@@ -93,7 +93,7 @@ export default {
       url: '/roles/update/permission',
       method: 'post',
       data: params,
-      mock: true
+      mock: false
     })
   }
 }
