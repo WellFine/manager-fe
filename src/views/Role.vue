@@ -105,6 +105,12 @@
     formatter (row, column, value) {
       return util.formateDate(new Date(value))
     }
+  }, {
+    label: '更新时间',
+    prop: 'updateTime',
+    formatter (row, column, value) {
+      return util.formateDate(new Date(value))
+    }
   }]
   const actionMap = {}
 

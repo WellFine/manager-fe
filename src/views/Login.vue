@@ -33,8 +33,8 @@
     data () {
       return {
         user: {
-          userName: '',
-          userPwd: ''
+          userName: 'admin',
+          userPwd: 'admin'
         },
         rules: {
           userName: [{
