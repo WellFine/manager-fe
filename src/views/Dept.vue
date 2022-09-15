@@ -115,10 +115,7 @@
     methods: {
       async getDeptList () {
         try {
-          this.deptList = await this.$api.getDeptList({
-            ...this.queryForm,
-            ...this.pager
-          })
+          this.deptList = await this.$api.getDeptList(this.queryForm)
         } catch (error) {
           this.$message.error(`获取部门列表失败：${error}`)
         }
