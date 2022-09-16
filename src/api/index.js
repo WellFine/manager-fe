@@ -96,6 +96,14 @@ export default {
       mock: false
     })
   },
+  deptSubmit (params) {
+    return request({
+      url: '/dept/operate',
+      method: 'post',
+      data: params,
+      mock: false
+    })
+  },
   updatePermission (params) {
     return request({
       url: '/roles/update/permission',
@@ -104,11 +112,12 @@ export default {
       mock: false
     })
   },
-  deptSubmit (params) {
+  // 根据用户角色权限获取菜单
+  getPermissionList () {
     return request({
-      url: '/dept/operate',
-      method: 'post',
-      data: params,
+      url: '/users/getPermissionList',
+      method: 'get',
+      data: {},
       mock: false
     })
   }
