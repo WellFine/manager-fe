@@ -27,4 +27,19 @@ app.config.globalProperties.$request = request  // 以后可以通过 vm.$reques
 app.config.globalProperties.$api = api
 app.config.globalProperties.$storage = storage
 
+// 权限控制全局可用
+app.directive('has', {
+  // el 是指令绑定的 dom 元素，binding 包含指令的各项参数如 v-has:add="'user-create'" 的 add 和 user-create
+  beforeMount: (el, binding) => {
+    const userAction = storage.getItem('actionList')  // 获取用户按钮权限
+    const value = binding.value  // 指令传过来的值
+    if (!userAction.includes(value)) {  // 判断是否有权限，没有就不显示按钮
+      el.style = 'display: none'
+      setTimeout(() => {  // beforeMount 时还没有挂载，通过 setTimeout 宏任务等挂载后再 remove 掉
+        el.parentNode.removeChild(el)
+      })
+    }
+  }
+})
+
 app.mount('#app')

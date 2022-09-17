@@ -19,7 +19,7 @@
     </div>
     <div class="base-table">
       <div class="action">
-        <el-button type="primary" @click="handleAdd(1)">创建</el-button>
+        <el-button type="primary" @click="handleAdd(1)" v-has="'menu-create'">创建</el-button>
       </div>
       <!-- 
         树形结构必须要定义 row-key
@@ -33,9 +33,9 @@
         />
         <el-table-column label="操作" width="220">
           <template #default="scope">
-            <el-button type="primary" @click="handleAdd(2, scope.row)" size="small">新增</el-button>
-            <el-button type="success" @click="handleEdit(scope.row)" size="small">编辑</el-button>
-            <el-button type="danger" @click="handleDel(scope.row._id)" size="small">删除</el-button>
+            <el-button type="primary" @click="handleAdd(2, scope.row)" size="small" v-has="'menu-create'">新增</el-button>
+            <el-button type="success" @click="handleEdit(scope.row)" size="small" v-has="'menu-edit'">编辑</el-button>
+            <el-button type="danger" @click="handleDel(scope.row._id)" size="small" v-has="'menu-delete'">删除</el-button>
           </template>
         </el-table-column>
       </el-table>

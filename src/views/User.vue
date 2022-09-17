@@ -27,8 +27,8 @@
     <div class="base-table">
       <!-- base-table 和 action 在 @/assets/style/index.scss 中设置了部分样式，主要是一些间距和边框 -->
       <div class="action">
-        <el-button type="primary" @click="handleCreate">新增</el-button>
-        <el-button type="danger" @click="handlePatchDel">批量删除</el-button>
+        <el-button type="primary" @click="handleCreate" v-has="'user-create'">新增</el-button>
+        <el-button type="danger" @click="handlePatchDel" v-has="'user-patch-delete'">批量删除</el-button>
       </div>
       <!-- selection-change 在选中多选框时触发 -->
       <el-table :data="userList" @selection-change="handleSelectionChange">
@@ -45,8 +45,8 @@
         <el-table-column label="操作" width="150">
           <!-- 插槽的作用域 scope 中存放着当前行的数据 -->
           <template #default="scope">
-            <el-button size="small" @click="handleEdit(scope.row)">编辑</el-button>
-            <el-button type="danger" size="small" @click="handleDel(scope.row)">删除</el-button>
+            <el-button size="small" @click="handleEdit(scope.row)" v-has="'user-edit'">编辑</el-button>
+            <el-button type="danger" size="small" @click="handleDel(scope.row)" v-has="'user-delete'">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
