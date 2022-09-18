@@ -66,4 +66,19 @@ const router = createRouter({
   routes
 })
 
+// 导航守卫，用于判断路径是否存在以及设置页面 title
+router.beforeEach((to, from, next) => {
+  if (checkPermission(to.path)) {
+    document.title = to.meta.title
+    next()  // 页面存在，next 进入
+  } else {  // 要访问的页面不存在，没有在 routes 中定义过
+    next('/404')  // 跳转到 404 页面
+  }
+})
+
+// 判断当前地址是否可以访问
+function checkPermission (path) {
+  return router.getRoutes().some(route => route.path === path)
+}
+
 export default router
