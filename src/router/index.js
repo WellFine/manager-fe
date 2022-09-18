@@ -52,6 +52,13 @@ const routes = [{
     title: '登录'
   },
   component: () => import('@/views/Login.vue')  // 按需加载
+}, {
+  name: '404',
+  path: '/404',
+  meta: {
+    title: '页面不存在'
+  },
+  component: () => import('@/views/404.vue')
 }]
 
 const router = createRouter({
