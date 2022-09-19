@@ -120,5 +120,14 @@ export default {
       data: {},
       mock: false
     })
+  },
+  // 获取申请列表
+  getApplyList (params) {
+    return request({
+      url: '/leave/list',
+      method: 'get',
+      data: params,
+      mock: true
+    })
   }
 }

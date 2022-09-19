@@ -54,8 +54,9 @@
         // el-form 表单的 validate 是校验规则的方法，valid 参数为 true 表示校验通过
         this.$refs.userForm.validate(valid => {
           if (valid) {  // 校验通过
-            this.$api.login(this.user).then(res => {
+            this.$api.login(this.user).then(async res => {
               this.$store.commit('saveUserInfo', res)  // $store 是 vuex 自己挂载的
+              await this.loadAsyncRoutes()
               this.$router.push('/welcome')
             })
           } else {
@@ -70,7 +71,8 @@
             const { menuList } = await this.$api.getPermissionList()
             const routes = util.generateRoute(menuList)
             routes.map(route => {
-              route.component = () => import(`@/views/${route.component}.vue`)
+              const url = `./../views/${route.component}.vue`
+              route.component = () => import(url)
               this.$router.addRoute('home', route)
             })
           } catch (error) {}
