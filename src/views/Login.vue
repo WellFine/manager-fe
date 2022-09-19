@@ -28,6 +28,8 @@
 </template>
 
 <script>
+  import util from '@/utils/util'
+
   export default {
     name: 'Login',
     data () {
@@ -60,6 +62,19 @@
             return false  // 校验不通过，返回 false 不做任何事
           }
         })
+      },
+      async loadAsyncRoutes () {
+        const userInfo = this.$store.state.userInfo
+        if (userInfo.token) {
+          try {
+            const { menuList } = await this.$api.getPermissionList()
+            const routes = util.generateRoute(menuList)
+            routes.map(route => {
+              route.component = () => import(`@/views/${route.component}.vue`)
+              this.$router.addRoute('home', route)
+            })
+          } catch (error) {}
+        }
       }
     }
   }

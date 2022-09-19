@@ -1,5 +1,8 @@
 import { createRouter, createWebHashHistory } from 'vue-router'
 import Home from '@/components/Home.vue'
+import store from '@/store'
+import API from '@/api'
+import util from '@/utils/util'
 
 const routes = [{
   name: 'home',
@@ -16,7 +19,7 @@ const routes = [{
       title: '欢迎页'
     },
     component: () => import('@/views/Welcome.vue')  // 按需加载
-  }, {
+  }, /* {
     name: 'user',
     path: '/system/user',
     meta: {
@@ -44,7 +47,7 @@ const routes = [{
       title: '部门管理'
     },
     component: () => import('@/views/Dept.vue')
-  }]
+  } */]
 }, {
   name: 'login',
   path: '/login',
@@ -80,5 +83,24 @@ router.beforeEach((to, from, next) => {
 function checkPermission (path) {
   return router.getRoutes().some(route => route.path === path)
 }
+
+async function loadAsyncRoutes () {
+  const userInfo = store.state.userInfo
+  if (userInfo.token) {
+    try {
+      const { menuList } = await API.getPermissionList()
+      const routes = util.generateRoute(menuList)
+      routes.map(route => {
+        // 这里不能用 @，且要用变量形式放入 import 中，否则加载不出来
+        const url = `./../views/${route.component}.vue`
+        route.component = () => import(url)
+        router.addRoute('home', route)
+      })
+    } catch (error) {}
+  }
+}
+
+// 这里只会加载一次，如果加载时未登录，token 为空就无法动态加载，所以需要在登录时也调用一次该方法
+await loadAsyncRoutes()
 
 export default router

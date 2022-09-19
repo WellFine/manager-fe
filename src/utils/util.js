@@ -31,5 +31,28 @@ export default {
     }
 
     return fmt
+  },
+  generateRoute (menuList) {
+    const routes = []
+    const deepList = list => {
+      while (list.length) {
+        const item = list.pop()
+        if (item.action) {
+          routes.push({
+            name: item.component,
+            path: item.path,
+            meta: {
+              title: item.menuName
+            },
+            component: item.component
+          })
+        }
+        if (item.children && !item.action) {
+          deepList(item.children)
+        }
+      }
+    }
+    deepList(menuList)
+    return routes
   }
 }
