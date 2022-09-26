@@ -9,6 +9,7 @@ const state = {
   userInfo: storage.getItem('userInfo') || {},  // 获取用户信息，如果取不到就到 storage 中取
   menuList: storage.getItem('menuList') || [],
   actionList: storage.getItem('actionList') || [],
+  noticeCount: 0
 }
 
 export default createStore({

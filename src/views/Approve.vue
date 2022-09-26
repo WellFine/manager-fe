@@ -218,6 +218,7 @@
           handleClose()
           $message.success('处理成功')
           getApplyList()
+          $store.commit('saveNoticeCount', $store.state.noticeCount - 1)
         } catch (error) {
           $message.error(`处理失败：${error.stack}`)
         }

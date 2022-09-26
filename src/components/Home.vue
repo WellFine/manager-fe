@@ -32,7 +32,7 @@
           </div>
         </div>
         <div class="user-info">
-          <el-badge class="notice" :is-dot="noticeCount > 0" type="danger">
+          <el-badge class="notice" :is-dot="noticeCount > 0" type="danger" @click="$router.push('/audit/approve')">
             <el-icon><bell /></el-icon>
           </el-badge>
           <!-- @command 监听点击了哪个 el-dropdown-item 标签，通过 command 属性判断 -->
@@ -66,10 +66,14 @@
       return {
         isCollapse: false,
         userInfo: this.$store.state.userInfo,
-        noticeCount: 0,
         userMenu: [],
         // 默认选中的菜单项其实对应的就是当前路径，如 localhost:8015/#/welcome，默认选中的就是 /welcome
         activeMenu: location.hash.slice(1)
+      }
+    },
+    computed: {
+      noticeCount () {
+        return this.$store.state.noticeCount
       }
     },
     mounted () {
@@ -89,7 +93,7 @@
       async getNoticeCount () {
         try {
           const count = await this.$api.noticeCount()
-          this.noticeCount = count
+          this.$store.commit('saveNoticeCount', count)
         } catch (error) {
           console.error(error)
         }
@@ -172,6 +176,7 @@
           .notice {
             line-height: 0px;
             margin-right: 15px;
+            cursor: pointer;
           }
           .user-link {
             cursor: pointer;

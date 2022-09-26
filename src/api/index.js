@@ -13,7 +13,8 @@ export default {
     return request({
       url: '/leave/count',
       method: 'get',
-      data: {}
+      data: {},
+      mock: false
     })
   },
   getMenuList (params) {
