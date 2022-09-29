@@ -1,28 +1,7 @@
 <template>
   <div class='user-manager'>
     <div class="query-form">
-      <!-- inline 设置行内表单 -->
-      <el-form ref="form" :inline="true" :model="user">
-        <!-- prop 属性用于协助表单的重置方法 resetFields -->
-        <el-form-item label="用户 ID" prop="userId">
-          <el-input v-model="user.userId" placeholder="请输入用户 ID"></el-input>
-        </el-form-item>
-        <el-form-item label="用户名称" prop="userName">
-          <el-input v-model="user.userName" placeholder="请输入用户名称"></el-input>
-        </el-form-item>
-        <el-form-item label="状态" prop="state">
-          <el-select v-model="user.state" placeholder="请选择用户状态">
-            <el-option :value="0" label="所有"></el-option>
-            <el-option :value="1" label="在职"></el-option>
-            <el-option :value="2" label="离职"></el-option>
-            <el-option :value="3" label="试用期"></el-option>
-          </el-select>
-        </el-form-item>
-        <el-form-item>
-          <el-button type="primary" @click="handleQuery">查询</el-button>
-          <el-button @click="handleReset('form')">重置</el-button>
-        </el-form-item>
-      </el-form>
+      <QueryForm :form="form" v-model="user" @handleQuery="handleQuery" />
     </div>
     <div class="base-table">
       <!-- base-table 和 action 在 @/assets/style/index.scss 中设置了部分样式，主要是一些间距和边框 -->
@@ -136,7 +115,7 @@
       const { ctx, appContext } = getCurrentInstance()
       const { $api, $message } = appContext.config.globalProperties
 
-      const user = reactive({  // 用户表单对象
+      const user = ref({  // 用户表单对象
         state: 0  // 默认状态为所有
       })
       // 弄个假数据测试页面结构
@@ -212,6 +191,36 @@
       const roleList = ref([])  // 系统角色列表
       const deptList = ref([])  // 部门列表
 
+      const form = [{
+        type: 'input',
+        label: '用户ID',
+        model: 'userId',
+        placeholder: '请输入用户ID'
+      }, {
+        type: 'input',
+        label: '用户名称',
+        model: 'userName',
+        placeholder: '请输入用户名称'
+      }, {
+        type: 'select',
+        label: '状态',
+        model: 'state',
+        placeholder: '请选择状态',
+        options: [{
+          label: '所有',
+          value: 0
+        }, {
+          label: '在职',
+          value: 1
+        }, {
+          label: '离职',
+          value: 2
+        }, {
+          label: '试用期',
+          value: 3
+        }]
+      }]
+
       onMounted(() => {
         getUserList()
         // 担心性能问题可以在弹框打开时再请求，但一般后台项目不用担心性能问题，所以就在这里直接请求
@@ -221,7 +230,7 @@
 
       // 获取用户列表
       const getUserList = async () => {
-        const params = { ...user, ...pager }
+        const params = { ...user.value, ...pager }
         try {
           const { page, list } = await $api.getUserList(params)
           userList.value = list
@@ -371,6 +380,7 @@
         roleList,
         deptList,
         action,
+        form,
         handleQuery,
         handleReset,
         handleCurrentChange,

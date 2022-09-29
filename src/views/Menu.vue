@@ -1,7 +1,8 @@
 <template>
   <div class="menu-manager">
     <div class="query-form">
-      <el-form ref="form" :inline="true" :model="queryForm">
+      <QueryForm :form="form" v-model="queryForm" @handleQuery="getMenuList" />
+      <!-- <el-form ref="form" :inline="true" :model="queryForm">
         <el-form-item label="菜单名称" prop="menuName">
           <el-input v-model="queryForm.menuName" placeholder="请输入菜单名称" />
         </el-form-item>
@@ -15,7 +16,7 @@
           <el-button type="primary" @click="getMenuList">查询</el-button>
           <el-button @click="handleReset('form')">重置</el-button>
         </el-form-item>
-      </el-form>
+      </el-form> -->
     </div>
     <div class="base-table">
       <div class="action">
@@ -159,7 +160,25 @@
           }, {
             min: 2, max: 8, message: '菜单名称请限制在2-8个字符', trigger: 'blur'
           }]
-        }
+        },
+        form: [{
+          type: 'input',
+          label: '菜单名称',
+          model: 'menuName',
+          placeholder: '请输入菜单名称'
+        }, {
+          type: 'select',
+          label: '菜单状态',
+          model: 'menuState',
+          placeholder: '请选择菜单状态',
+          options: [{
+            label: '正常',
+            value: 1
+          }, {
+            label: '停用',
+            value: 2
+          }]
+        }]
       }
     },
     mounted () {
