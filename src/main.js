@@ -8,7 +8,7 @@ import * as ElementPlusIconsVue from '@element-plus/icons-vue'
 import request from './utils/request'
 import api from './api'
 import storage from './utils/storage'
-import QueryForm from '../packages/QueryForm'
+import packages from '../packages'
 
 const app = createApp(App)
 app.use(router)  // 引入 vue-router 并挂载到 app 实例上
@@ -18,7 +18,7 @@ app.use(store)  // 引入 vuex 并挂载到 app 实例上
  * 可以全局配置 element-plus 的表单组件尺寸，large > default > small，默认为 default，default 相当于 medium
  */
 app.use(ElementPlus, { size: 'default' })
-app.use(QueryForm)  // app.use 会调用插件的 install 方法，QueryForm.install 会全局注册 QueryForm 组件
+app.use(packages)  // app.use 会调用插件的 install 方法
 
 for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
   app.component(key, component)
