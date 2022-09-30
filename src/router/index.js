@@ -101,6 +101,6 @@ async function loadAsyncRoutes () {
 }
 
 // 这里只会加载一次，如果加载时未登录，token 为空就无法动态加载，所以需要在登录时也调用一次该方法
-await loadAsyncRoutes()
+loadAsyncRoutes()
 
 export default router
