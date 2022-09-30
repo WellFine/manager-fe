@@ -33,7 +33,11 @@
         @current-change="handleCurrentChange"
       />
     </div> -->
-    <BaseTable :columns="columns" :data="userList" selection @selection-change="handleSelectionChange">
+    <BaseTable
+      :columns="columns" :data="userList" selection
+      @selection-change="handleSelectionChange"
+      @handleAction="handleAction"
+    >
       <template #action>
         <el-button type="primary" @click="handleCreate" v-has="'user-create'">新增</el-button>
         <el-button type="danger" @click="handlePatchDel" v-has="'user-patch-delete'">批量删除</el-button>
@@ -163,6 +167,17 @@
         formatter: (row, column, value) => {
           return util.formateDate(new Date(value))
         }
+      }, {
+        type: 'action',
+        label: '操作',
+        width: 150,
+        list: [{
+          type: 'primary',
+          text: '编辑'
+        }, {
+          type: 'danger',
+          text: '删除'
+        }]
       }]
       const pager = reactive({  // 分页对象
         pageNum: 1,
@@ -369,6 +384,11 @@
         })
       }
 
+      const handleAction = ({ index, row }) => {
+        if (index == 0) handleEdit(row)
+        else if (index == 1) handleDel(row)
+      }
+
       return {
         user,
         userList,
@@ -390,7 +410,8 @@
         handleCreate,
         handleClose,
         handleSubmit,
-        handleEdit
+        handleEdit,
+        handleAction
       }
     }
   }
