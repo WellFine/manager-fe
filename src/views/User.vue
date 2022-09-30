@@ -34,9 +34,10 @@
       />
     </div> -->
     <BaseTable
-      :columns="columns" :data="userList" selection
+      :columns="columns" :data="userList" selection :pager="pager"
       @selection-change="handleSelectionChange"
       @handleAction="handleAction"
+      @handleCurrentChange="handleCurrentChange"
     >
       <template #action>
         <el-button type="primary" @click="handleCreate" v-has="'user-create'">新增</el-button>

@@ -18,6 +18,11 @@
         </el-table-column>
       </template>
     </el-table>
+    <el-pagination
+      class="pagination" background layout="prev, pager, next"
+      :total="pager.total" :page-size="pager.pageSize"
+      @current-change="handleCurrentChange"
+    />
   </div>
 </template>
 
@@ -26,7 +31,8 @@
     name: 'BaseTable',
     props: {
       columns: Array,
-      selection: Boolean
+      selection: Boolean,
+      pager: Object
     },
     setup (props, context) {
       const handleAction = (index, row) => {
@@ -38,8 +44,13 @@
         })
       }
 
+      const handleCurrentChange = pageNum => {
+        context.emit('handleCurrentChange', pageNum)
+      }
+
       return {
-        handleAction
+        handleAction,
+        handleCurrentChange
       }
     }
   }
